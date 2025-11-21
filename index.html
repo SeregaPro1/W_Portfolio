@@ -3,319 +3,343 @@
 <head>  
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <meta name="description" content="Профессиональный видеомонтаж, Reels, YouTube. Портфолио видеомейкера.">  
     <title>Видеомонтаж - Портфолио</title>  
       
-    <!-- Tailwind CSS -->  
+    <!-- Подключаем Tailwind (для продакшена лучше использовать CSS файл, но для GitHub Pages ок) -->  
     <script src="https://cdn.tailwindcss.com"></script>  
       
-    <!-- Шрифты -->  
+    <!-- Предзагрузка шрифтов -->  
     <link rel="preconnect" href="https://fonts.googleapis.com">  
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>  
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Manrope:wght@300;400;600&display=swap" rel="stylesheet">  
       
-    <!-- Icons -->  
+    <!-- Иконки -->  
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">  
   
     <style>  
-        body { font-family: 'Manrope', sans-serif; color: #1a1a1a; background-color: #fdfdfd; }  
+        /* Базовые настройки для скорости отрисовки */  
+        body { font-family: 'Manrope', sans-serif; color: #1a1a1a; background-color: #fdfdfd; text-rendering: optimizeLegibility; }  
+          
+        /* Оптимизация секций, которые вне экрана */  
+        section { content-visibility: auto; contain-intrinsic-size: 800px; }  
+          
         .font-display { font-family: 'Cormorant Garamond', serif; font-weight: 600; font-style: italic; letter-spacing: -0.02em; }  
           
-        /* Стили для ползунков */  
+        /* Кастомные ползунки */  
         input[type=range] { -webkit-appearance: none; background: transparent; }  
         input[type=range]::-webkit-slider-thumb {  
             -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%;  
             background: #ffffff; border: 4px solid #1a1a1a; cursor: pointer; margin-top: -9px; transition: transform 0.1s;  
         }  
-        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }  
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; cursor: pointer; background: #1a1a1a; }  
-  
-        /* Стили кнопок калькулятора */  
+          
         .tag-btn.active { background-color: #1a1a1a; color: white; border-color: #1a1a1a; }  
   
-        /* КАРОУСЕЛЬ CSS */  
+        /* КАРУСЕЛЬ */  
         .carousel-container {  
             position: relative;  
-            height: 600px;  
+            height: 550px; /* Чуть меньше для мобилок */  
             width: 100%;  
             display: flex;  
             justify-content: center;  
             align-items: center;  
             perspective: 1000px;  
+            overflow: hidden; /* Важно для мобилок */  
         }  
         .carousel-item {  
             position: absolute;  
-            width: 300px;  
-            height: 533px; /* 9:16 ratio approx */  
-            background: black;  
+            /* Адаптивная ширина: на мобилках 70% ширины экрана, на ПК 300px */  
+            width: 70vw;   
+            max-width: 300px;  
+            /* Соотношение 9:16 */  
+            aspect-ratio: 9/16;  
+            background: #000;  
             border-radius: 20px;  
             transition: all 0.5s ease-in-out;  
-            box-shadow: 0 15px 30px rgba(0,0,0,0.3);  
-            overflow: hidden;  
-            border: 4px solid #222;  
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);  
+            border: 2px solid #333;  
+            /* Чтобы iframe не перекрывал скругления */  
+            overflow: hidden;   
+        }  
+  
+        /* Классы позиций */  
+        .pos-center { transform: translateX(0) scale(1); z-index: 30; opacity: 1; border-color: #fff; }  
+        /* На мобильных сдвигаем меньше (15%), на десктопе больше */  
+        .pos-left { transform: translateX(-15%) scale(0.85); z-index: 20; opacity: 0.6; filter: grayscale(50%); pointer-events: none;}  
+        .pos-right { transform: translateX(15%) scale(0.85); z-index: 20; opacity: 0.6; filter: grayscale(50%); pointer-events: none;}  
+          
+        @media (min-width: 768px) {  
+            .pos-left { transform: translateX(-220px) scale(0.85); }  
+            .pos-right { transform: translateX(220px) scale(0.85); }  
         }  
           
-        /* Классы позиций для бесконечной карусели */  
-        .pos-center {  
-            transform: translateX(0) scale(1);  
-            z-index: 30;  
-            opacity: 1;  
-            pointer-events: auto; /* Можно кликать на видео */  
-            border-color: #000;  
+        .pos-left-hidden { transform: translateX(-300px) scale(0.7); z-index: 10; opacity: 0; pointer-events: none;}  
+        .pos-right-hidden { transform: translateX(300px) scale(0.7); z-index: 10; opacity: 0; pointer-events: none;}  
+  
+        /* Facade для видео (кнопка Play) */  
+        .video-facade {  
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;  
+            background-size: cover; background-position: center; cursor: pointer;  
+            display: flex; justify-content: center; align-items: center;  
+            transition: 0.3s;  
         }  
-        .pos-left {  
-            transform: translateX(-220px) scale(0.85);  
-            z-index: 20;  
-            opacity: 0.7;  
-            pointer-events: none; /* Нельзя кликать боковые */  
+        .video-facade:hover { filter: brightness(1.1); }  
+        .play-btn {  
+            width: 60px; height: 60px; background: rgba(255,255,255,0.2); backdrop-filter: blur(5px);  
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;  
+            border: 2px solid white; transition: transform 0.2s;  
         }  
-        .pos-right {  
-            transform: translateX(220px) scale(0.85);  
-            z-index: 20;  
-            opacity: 0.7;  
-            pointer-events: none;  
-        }  
-        .pos-left-hidden {  
-            transform: translateX(-380px) scale(0.7);  
-            z-index: 10;  
-            opacity: 0;  
-            pointer-events: none;  
-        }  
-        .pos-right-hidden {  
-            transform: translateX(380px) scale(0.7);  
-            z-index: 10;  
-            opacity: 0;  
-            pointer-events: none;  
-        }  
+        .video-facade:hover .play-btn { transform: scale(1.1); background: rgba(255,0,0,0.8); border-color: red; }  
           
-        /* Убираем стрелочки у input type number */  
-        input[type=number]::-webkit-inner-spin-button,   
-        input[type=number]::-webkit-outer-spin-button {   
-            -webkit-appearance: none;   
-            margin: 0;   
-        }  
+        /* Убираем стрелочки input number */  
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }  
     </style>  
 </head>  
-<body class="overflow-x-hidden">  
+<body class="overflow-x-hidden bg-black">  
   
     <!-- HERO SECTION -->  
-    <section class="relative h-screen min-h-[600px] w-full flex flex-col justify-center items-center text-white bg-black">  
+    <section class="relative min-h-screen w-full flex flex-col justify-center items-center text-white bg-black">  
+        <!-- Оптимизированный фон (меньше размер) -->  
         <div class="absolute inset-0 z-0">  
-            <img src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2070&auto=format&fit=crop" alt="Background" class="w-full h-full object-cover opacity-50">  
-            <div class="absolute inset-0 bg-gradient-to-tr from-blue-950/90 via-transparent to-purple-900/50 mix-blend-multiply"></div>  
+            <img src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=60&w=1200&auto=format&fit=crop"   
+                 alt="Background"   
+                 class="w-full h-full object-cover opacity-40"  
+                 loading="eager"> <!-- Eager для первого экрана -->  
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-blue-900/30"></div>  
         </div>  
   
         <div class="relative z-10 text-center container mx-auto px-4 pt-10">  
-            <h1 class="font-display text-6xl md:text-8xl lg:text-[9rem] leading-none uppercase mb-6 drop-shadow-2xl">Видеомонтаж</h1>  
-            <p class="max-w-2xl mx-auto text-base md:text-lg opacity-90 mb-12 font-light tracking-wide">  
+            <!-- Адаптивный размер текста: text-5xl для мобилок, text-9xl для ПК -->  
+            <h1 class="font-display text-5xl sm:text-7xl md:text-9xl leading-tight uppercase mb-6 drop-shadow-2xl">  
+                Видео<br class="md:hidden">монтаж  
+            </h1>  
+            <p class="max-w-xl mx-auto text-sm md:text-lg opacity-80 mb-10 font-light tracking-wide px-4">  
                 Создаю визуальные истории. Профессиональный монтаж для YouTube, рекламы и социальных сетей.  
             </p>  
-            <div class="flex flex-wrap justify-center gap-6 text-xs md:text-sm uppercase tracking-widest font-semibold">  
-                <a href="#verticals" class="px-8 py-3 border border-white/30 rounded-full backdrop-blur-sm hover:bg-white hover:text-black transition duration-300">Примеры</a>  
-                <a href="#calculator" class="px-8 py-3 border border-white/30 rounded-full backdrop-blur-sm hover:bg-white hover:text-black transition duration-300">Рассчитать цену</a>  
+            <div class="flex flex-col sm:flex-row justify-center gap-4 text-xs md:text-sm uppercase tracking-widest font-semibold px-10">  
+                <a href="#verticals" class="px-8 py-3 border border-white/30 rounded-full backdrop-blur-sm hover:bg-white hover:text-black transition duration-300 text-center">Смотреть работы</a>  
+                <a href="#calculator" class="px-8 py-3 bg-white text-black border border-white rounded-full hover:bg-gray-200 transition duration-300 text-center">Рассчитать цену</a>  
             </div>  
         </div>  
     </section>  
   
     <!-- SERVICES: PODCAST -->  
-    <section class="py-24 container mx-auto px-6 md:px-12">  
-        <div class="flex flex-col md:flex-row items-center gap-16">  
-            <div class="w-full md:w-1/2 space-y-6">  
-                <h2 class="font-display text-6xl md:text-7xl text-gray-900">Подкаст</h2>  
-                <div class="w-20 h-1 bg-black"></div>  
-                <p class="text-gray-600 text-lg leading-relaxed">  
-                    Полный цикл обработки звука и видео для подкастов. Удаление эха, пауз, добавление динамики за счет смены планов.  
+    <section class="py-16 md:py-24 container mx-auto px-6 md:px-12 bg-white text-black rounded-t-[3rem] -mt-10 relative z-20">  
+        <div class="flex flex-col md:flex-row items-center gap-10 md:gap-16">  
+            <div class="w-full md:w-1/2 space-y-4 md:space-y-6 text-center md:text-left">  
+                <h2 class="font-display text-4xl md:text-7xl">Подкаст</h2>  
+                <div class="w-20 h-1 bg-black mx-auto md:mx-0"></div>  
+                <p class="text-gray-600 text-base md:text-lg leading-relaxed">  
+                    Чистый звук и динамичная картинка. Удаление пауз, цветокоррекция и мульти-камера. Делаю так, чтобы зритель досмотрел до конца.  
                 </p>  
             </div>  
             <div class="w-full md:w-1/2">  
-                <img src="https://images.unsplash.com/photo-1589903308904-1010c2294adc?q=80&w=1000&auto=format&fit=crop" class="rounded-lg shadow-2xl w-full object-cover aspect-video border border-gray-200">  
+                <!-- Оптимизированная картинка -->  
+                <img src="https://images.unsplash.com/photo-1589903308904-1010c2294adc?q=60&w=800&auto=format&fit=crop"   
+                     alt="Podcast"   
+                     loading="lazy"  
+                     class="rounded-2xl shadow-xl w-full object-cover aspect-video border border-gray-100">  
             </div>  
         </div>  
     </section>  
   
-    <!-- SERVICES: REPORTAGE (YOUTUBE EMBED) -->  
-    <section class="py-24 bg-gray-50">  
+    <!-- SERVICES: REPORTAGE (Optimized Video) -->  
+    <section class="py-16 md:py-24 bg-gray-50">  
         <div class="container mx-auto px-6 md:px-12">  
-            <div class="flex flex-col md:flex-row-reverse items-center gap-16">  
-                <div class="w-full md:w-1/2 space-y-6 text-right md:text-left">  
-                    <h2 class="font-display text-6xl md:text-7xl text-gray-900 w-full text-right">Репортажи</h2>  
-                    <div class="w-20 h-1 bg-black ml-auto md:ml-0"></div>  
-                    <p class="text-gray-600 text-lg leading-relaxed ml-auto md:ml-0">  
-                        Динамичный монтаж событий. Склейка лучших моментов, наложение титров, стабилизация трясущейся камеры.  
+            <div class="flex flex-col md:flex-row-reverse items-center gap-10 md:gap-16">  
+                <div class="w-full md:w-1/2 space-y-4 md:space-y-6 text-center md:text-left">  
+                    <h2 class="font-display text-4xl md:text-7xl w-full md:text-right">Репортажи</h2>  
+                    <div class="w-20 h-1 bg-black mx-auto md:ml-auto md:mr-0"></div>  
+                    <p class="text-gray-600 text-base md:text-lg leading-relaxed md:text-right">  
+                        Передаю атмосферу события. Динамичная нарезка, стабилизация, саунд-дизайн и инфографика.  
                     </p>  
                 </div>  
                   
-                <!-- Встроенное видео с YouTube -->  
+                <!-- Фасад для видео (Быстрая загрузка) -->  
                 <div class="w-full md:w-1/2 flex justify-center">  
-                    <div class="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-black">  
-                        <!-- Используем реальное видео (пример с канала GoPro) -->  
-                        <iframe class="w-full h-full"   
-                            src="https://www.youtube.com/embed/xrbJ8Vw8qBw?si=ReportageExample"   
-                            title="YouTube video player" frameborder="0"   
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"   
-                            allowfullscreen>  
-                        </iframe>  
+                    <div class="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-black group">  
+                        <!-- Клик по этому блоку запустит видео -->  
+                        <div class="video-facade" onclick="loadVideo(this, 'xrbJ8Vw8qBw')"   
+                             style="background-image: url('https://img.youtube.com/vi/xrbJ8Vw8qBw/maxresdefault.jpg');">  
+                            <div class="play-btn"><i class="fas fa-play text-white text-xl ml-1"></i></div>  
+                        </div>  
                     </div>  
                 </div>  
             </div>  
         </div>  
     </section>  
   
-    <!-- VERTICALS CAROUSEL (INFINITE LOOP) -->  
-    <section id="verticals" class="py-24 bg-white overflow-hidden relative">  
-        <div class="text-center mb-12">  
-            <h2 class="font-display text-6xl md:text-7xl">Shorts & Reels</h2>  
-            <p class="text-gray-500 mt-4">Листайте примеры (бесконечная прокрутка)</p>  
+    <!-- VERTICALS CAROUSEL (Infinite & Optimized) -->  
+    <section id="verticals" class="py-16 md:py-24 bg-white overflow-hidden relative">  
+        <div class="text-center mb-10 px-4">  
+            <h2 class="font-display text-4xl md:text-7xl">Shorts & Reels</h2>  
+            <p class="text-gray-500 mt-2 text-sm md:text-base">Листайте для просмотра примеров</p>  
         </div>  
           
         <div class="carousel-container max-w-6xl mx-auto">  
-            <!-- Кнопки навигации -->  
-            <button onclick="rotateCarousel('prev')" class="absolute left-4 md:left-10 z-50 bg-white hover:bg-black hover:text-white p-4 rounded-full shadow-xl transition border border-gray-200">  
-                <i class="fas fa-chevron-left text-xl"></i>  
+            <!-- Кнопки -->  
+            <button onclick="rotateCarousel('prev')" class="absolute left-2 md:left-10 z-50 bg-white/90 p-3 md:p-4 rounded-full shadow-lg border border-gray-200 active:scale-90 transition">  
+                <i class="fas fa-chevron-left text-lg"></i>  
             </button>  
-            <button onclick="rotateCarousel('next')" class="absolute right-4 md:right-10 z-50 bg-white hover:bg-black hover:text-white p-4 rounded-full shadow-xl transition border border-gray-200">  
-                <i class="fas fa-chevron-right text-xl"></i>  
+            <button onclick="rotateCarousel('next')" class="absolute right-2 md:right-10 z-50 bg-white/90 p-3 md:p-4 rounded-full shadow-lg border border-gray-200 active:scale-90 transition">  
+                <i class="fas fa-chevron-right text-lg"></i>  
             </button>  
   
-            <!-- 5 Видео карточек (YouTube Shorts) -->  
-            <!--   
-               Логика классов:  
-               0: pos-left-hidden  
-               1: pos-left  
-               2: pos-center (Активный)  
-               3: pos-right  
-               4: pos-right-hidden  
-            -->  
+            <!-- Карусель с фасадами вместо iframe -->  
+            <!-- Элементы генерируются JS для чистоты кода, но здесь статичная структура -->  
               
-            <!-- Video 1 -->  
+            <!-- Item 0 -->  
             <div class="carousel-item pos-left-hidden" id="item-0">  
-                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/W7qWa52k-nE" title="Shorts 1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
+                <div class="video-facade" onclick="loadShort(this, 'W7qWa52k-nE')" style="background-image: url('https://img.youtube.com/vi/W7qWa52k-nE/hqdefault.jpg');"><div class="play-btn"><i class="fas fa-play text-white ml-1"></i></div></div>  
             </div>  
-            <!-- Video 2 -->  
+            <!-- Item 1 -->  
             <div class="carousel-item pos-left" id="item-1">  
-                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/tN5Xh_wE1w0" title="Shorts 2" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
+                 <div class="video-facade" onclick="loadShort(this, 'tN5Xh_wE1w0')" style="background-image: url('https://img.youtube.com/vi/tN5Xh_wE1w0/hqdefault.jpg');"><div class="play-btn"><i class="fas fa-play text-white ml-1"></i></div></div>  
             </div>  
-            <!-- Video 3 (Center start) -->  
+            <!-- Item 2 (Center) -->  
             <div class="carousel-item pos-center" id="item-2">  
-                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/5t53TCi2cIs" title="Shorts 3" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
+                 <div class="video-facade" onclick="loadShort(this, '5t53TCi2cIs')" style="background-image: url('https://img.youtube.com/vi/5t53TCi2cIs/hqdefault.jpg');"><div class="play-btn"><i class="fas fa-play text-white ml-1"></i></div></div>  
             </div>  
-            <!-- Video 4 -->  
+            <!-- Item 3 -->  
             <div class="carousel-item pos-right" id="item-3">  
-                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/yJg-Y5byMMw" title="Shorts 4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
+                 <div class="video-facade" onclick="loadShort(this, 'yJg-Y5byMMw')" style="background-image: url('https://img.youtube.com/vi/yJg-Y5byMMw/hqdefault.jpg');"><div class="play-btn"><i class="fas fa-play text-white ml-1"></i></div></div>  
             </div>  
-            <!-- Video 5 -->  
+            <!-- Item 4 -->  
             <div class="carousel-item pos-right-hidden" id="item-4">  
-                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/hY7m5jjJ9mM" title="Shorts 5" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
+                 <div class="video-facade" onclick="loadShort(this, 'hY7m5jjJ9mM')" style="background-image: url('https://img.youtube.com/vi/hY7m5jjJ9mM/hqdefault.jpg');"><div class="play-btn"><i class="fas fa-play text-white ml-1"></i></div></div>  
             </div>  
   
         </div>  
     </section>  
   
     <!-- CALCULATOR SECTION -->  
-    <section id="calculator" class="py-24 container mx-auto px-6 md:px-12 max-w-6xl bg-gray-50 rounded-3xl my-12 border border-gray-100 shadow-lg">  
-        <div class="text-center mb-16">  
-            <h2 class="font-display text-6xl uppercase text-gray-900">Калькулятор</h2>  
-        </div>  
-  
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-20">  
-            <!-- Левая часть: Настройки -->  
-            <div class="space-y-12">  
-                <!-- 1. Сырой материал -->  
-                <div>  
-                    <div class="flex justify-between mb-4 items-center">  
-                        <label class="text-xl font-semibold">Исходники (мин)</label>  
-                        <span id="val-raw" class="text-xl font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg">0</span>  
-                    </div>  
-                    <input type="range" id="input-raw" min="0" max="120" value="10" class="w-full">  
-                </div>  
-  
-                <!-- 2. Длительность готового -->  
-                <div>  
-                    <div class="flex justify-between mb-4 items-center">  
-                        <label class="text-xl font-semibold">Готовый ролик (мин)</label>  
-                        <span id="val-duration" class="text-xl font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg">0</span>  
-                    </div>  
-                    <input type="range" id="input-duration" min="0" max="60" value="2" class="w-full">  
-                </div>  
-  
-                <!-- 3. Количество вертикальных (С полем ввода) -->  
-                <div>  
-                    <div class="flex justify-between mb-4 items-end">  
-                        <label class="text-xl font-semibold">Количество Reels/Shorts</label>  
-                        <!-- Поле ввода -->  
-                        <div class="flex flex-col items-end">  
-                             <input type="number" id="manual-verticals" value="0" min="0" max="100"   
-                             class="w-20 text-center text-xl font-bold text-blue-600 bg-white border-2 border-gray-200 rounded-lg py-1 focus:border-black outline-none transition">  
-                             <span class="text-xs text-gray-400 mt-1">впишите число</span>  
-                        </div>  
-                    </div>  
-                    <input type="range" id="input-verticals" min="0" max="20" value="0" class="w-full">  
-                </div>  
-                  
-                <!-- Итого -->  
-                <div class="pt-8 border-t border-gray-200">  
-                    <p class="text-lg text-gray-500 mb-2">Итоговая стоимость:</p>  
-                    <p class="text-6xl font-display font-bold text-gray-900" id="total-price">0 ₽</p>  
-                </div>  
+    <section id="calculator" class="py-16 md:py-24 container mx-auto px-4 md:px-12 max-w-6xl">  
+        <div class="bg-gray-50 rounded-[2rem] p-6 md:p-12 shadow-sm border border-gray-100">  
+            <div class="text-center mb-10">  
+                <h2 class="font-display text-4xl md:text-6xl uppercase text-gray-900">Калькулятор</h2>  
             </div>  
   
-            <!-- Правая часть: Доп услуги -->  
-            <div>  
-                <label class="block text-2xl font-display mb-6">Опции</label>  
-                <div class="flex flex-wrap gap-3" id="tags-container">  
-                    <button class="tag-btn px-5 py-3 rounded-full border border-gray-300 text-gray-600 hover:border-black transition text-sm font-medium bg-white" data-price="2000">Цветокоррекция</button>  
-                    <button class="tag-btn px-5 py-3 rounded-full border border-gray-300 text-gray-600 hover:border-black transition text-sm font-medium bg-white" data-price="1500">Саунд-дизайн</button>  
-                    <button class="tag-btn px-5 py-3 rounded-full border border-gray-300 text-gray-600 hover:border-black transition text-sm font-medium bg-white" data-price="1000">Субтитры</button>  
-                    <button class="tag-btn px-5 py-3 rounded-full border border-gray-300 text-gray-600 hover:border-black transition text-sm font-medium bg-white" data-price="3000">Инфографика</button>  
-                    <button class="tag-btn px-5 py-3 rounded-full border border-gray-300 text-gray-600 hover:border-black transition text-sm font-medium bg-white" data-price="5000">Сценарий</button>  
-                    <button class="tag-btn px-5 py-3 rounded-full border border-gray-300 text-gray-600 hover:border-black transition text-sm font-medium bg-white" data-price="5000">Срочность</button>  
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">  
+                <!-- Левая часть -->  
+                <div class="space-y-8 md:space-y-10">  
+                    <!-- Raw Material -->  
+                    <div>  
+                        <div class="flex justify-between mb-3 items-center">  
+                            <label class="text-lg md:text-xl font-semibold">Исходники (мин)</label>  
+                            <span id="val-raw" class="text-lg font-bold text-blue-600 bg-white border px-3 py-1 rounded-lg">10</span>  
+                        </div>  
+                        <input type="range" id="input-raw" min="0" max="120" value="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none">  
+                    </div>  
+  
+                    <!-- Duration -->  
+                    <div>  
+                        <div class="flex justify-between mb-3 items-center">  
+                            <label class="text-lg md:text-xl font-semibold">Готовый ролик (мин)</label>  
+                            <span id="val-duration" class="text-lg font-bold text-blue-600 bg-white border px-3 py-1 rounded-lg">2</span>  
+                        </div>  
+                        <input type="range" id="input-duration" min="0" max="60" value="2" class="w-full h-2 bg-gray-200 rounded-lg appearance-none">  
+                    </div>  
+  
+                    <!-- Vertical Count -->  
+                    <div>  
+                        <div class="flex justify-between mb-3 items-end">  
+                            <label class="text-lg md:text-xl font-semibold leading-none">Shorts / Reels</label>  
+                            <input type="number" id="manual-verticals" value="0" min="0" max="100"   
+                            class="w-20 text-center text-xl font-bold text-blue-600 bg-white border-2 border-gray-200 rounded-lg py-1 focus:border-black outline-none transition" inputmode="numeric">  
+                        </div>  
+                        <input type="range" id="input-verticals" min="0" max="20" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none">  
+                    </div>  
+                      
+                    <!-- Total -->  
+                    <div class="pt-6 border-t border-gray-200 text-center md:text-left">  
+                        <p class="text-base text-gray-500 mb-1">Итоговая стоимость:</p>  
+                        <p class="text-5xl font-display font-bold text-gray-900" id="total-price">0 ₽</p>  
+                    </div>  
                 </div>  
   
-                <div class="mt-12 flex gap-4">  
-                    <button onclick="window.location.href='#contacts'" class="flex-1 bg-black text-white px-6 py-4 rounded-lg text-sm font-bold hover:bg-gray-800 transition shadow-lg">ЗАКАЗАТЬ</button>  
-                    <button onclick="resetCalculator()" class="px-6 py-4 border border-gray-300 rounded-lg text-sm text-gray-500 hover:text-black hover:border-black transition">Сбросить</button>  
+                <!-- Правая часть -->  
+                <div>  
+                    <label class="block text-xl md:text-2xl font-display mb-6">Дополнительные опции</label>  
+                    <div class="flex flex-wrap gap-2 md:gap-3" id="tags-container">  
+                        <!-- Цены в data-price -->  
+                        <button class="tag-btn px-4 py-2 md:px-5 md:py-3 rounded-full border border-gray-300 text-gray-600 hover:border-black transition text-xs md:text-sm font-medium bg-white flex-grow md:flex-grow-0" data-price="2000">Цветокоррекция</button>  
+                        <button class="tag-btn px-4 py-2 md:px-5 md:py-3 rounded-full border border-gray-300 text-gray-600 hover:border-black transition text-xs md:text-sm font-medium bg-white flex-grow md:flex-grow-0" data-price="1500">Саунд-дизайн</button>  
+                        <button class="tag-btn px-4 py-2 md:px-5 md:py-3 rounded-full border border-gray-300 text-gray-600 hover:border-black transition text-xs md:text-sm font-medium bg-white flex-grow md:flex-grow-0" data-price="1000">Субтитры</button>  
+                        <button class="tag-btn px-4 py-2 md:px-5 md:py-3 rounded-full border border-gray-300 text-gray-600 hover:border-black transition text-xs md:text-sm font-medium bg-white flex-grow md:flex-grow-0" data-price="3000">Инфографика</button>  
+                        <button class="tag-btn px-4 py-2 md:px-5 md:py-3 rounded-full border border-gray-300 text-gray-600 hover:border-black transition text-xs md:text-sm font-medium bg-white flex-grow md:flex-grow-0" data-price="5000">Сценарий</button>  
+                        <button class="tag-btn px-4 py-2 md:px-5 md:py-3 rounded-full border border-gray-300 text-gray-600 hover:border-black transition text-xs md:text-sm font-medium bg-white flex-grow md:flex-grow-0" data-price="5000">Срочность</button>  
+                    </div>  
+  
+                    <div class="mt-10 flex flex-col md:flex-row gap-4">  
+                        <button onclick="window.location.href='#contacts'" class="w-full bg-black text-white px-6 py-4 rounded-xl text-sm font-bold hover:bg-gray-800 transition shadow-lg active:scale-95 transform">ЗАКАЗАТЬ</button>  
+                        <button onclick="resetCalculator()" class="w-full md:w-auto px-6 py-4 border border-gray-300 rounded-xl text-sm text-gray-500 hover:text-black hover:border-black transition">Сбросить</button>  
+                    </div>  
                 </div>  
             </div>  
         </div>  
     </section>  
   
     <!-- FOOTER -->  
-    <footer id="contacts" class="py-24 bg-[#111] text-white text-center">  
-        <h2 class="font-display text-6xl md:text-8xl uppercase mb-16 opacity-90">Связь со мной</h2>  
-        <div class="flex flex-col md:flex-row justify-center items-center gap-6 max-w-2xl mx-auto">  
+    <footer id="contacts" class="py-20 bg-[#111] text-white text-center rounded-t-[3rem] -mt-10 relative z-10">  
+        <h2 class="font-display text-5xl md:text-7xl uppercase mb-12 opacity-90">Связь</h2>  
+        <div class="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-6 max-w-2xl mx-auto px-6">  
             <a href="#" class="w-full md:w-auto flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-full transition text-lg font-semibold">  
                 <i class="fab fa-telegram-plane"></i> Telegram  
             </a>  
             <a href="mailto:hello@video.com" class="w-full md:w-auto flex items-center justify-center gap-3 border border-white/20 hover:bg-white/10 px-8 py-4 rounded-full transition text-lg">  
-                <i class="far fa-envelope"></i> Написать на почту  
+                <i class="far fa-envelope"></i> E-mail  
             </a>  
         </div>  
+        <p class="mt-12 text-gray-600 text-xs">© 2023 Portfolio. Optimized for performance.</p>  
     </footer>  
   
     <script>  
-        /* --- ЛОГИКА КАЛЬКУЛЯТОРА --- */  
+        /* --- ОПТИМИЗАЦИЯ ВИДЕО (Загрузка по клику) --- */  
+        function loadVideo(element, videoId) {  
+            element.innerHTML = `  
+                <iframe width="100%" height="100%"   
+                src="https://www.youtube.com/embed/${videoId}?autoplay=1"   
+                title="YouTube video player" frameborder="0"   
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"   
+                allowfullscreen></iframe>  
+            `;  
+            element.removeAttribute('onclick'); // Убираем клик чтобы не перезагружать  
+            element.style.cursor = 'default';  
+        }  
+  
+        function loadShort(element, videoId) {  
+            // Для шортсов логика такая же, заменяем обложку на iframe  
+            element.parentElement.innerHTML = `  
+                <iframe width="100%" height="100%"   
+                src="https://www.youtube.com/embed/${videoId}?autoplay=1"   
+                title="YouTube Shorts" frameborder="0"   
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"   
+                allowfullscreen></iframe>  
+            `;  
+        }  
+  
+        /* --- КАЛЬКУЛЯТОР --- */  
         const rawInput = document.getElementById('input-raw');  
         const durationInput = document.getElementById('input-duration');  
-        const verticalsInput = document.getElementById('input-verticals'); // Ползунок  
-        const manualVerticals = document.getElementById('manual-verticals'); // Поле ввода  
-          
+        const verticalsInput = document.getElementById('input-verticals');  
+        const manualVerticals = document.getElementById('manual-verticals');  
         const rawVal = document.getElementById('val-raw');  
         const durationVal = document.getElementById('val-duration');  
         const totalPriceEl = document.getElementById('total-price');  
         const tagBtns = document.querySelectorAll('.tag-btn');  
           
         let activeTagsCost = 0;  
+        // Тарифы  
         const PRICE_RAW = 50;  
         const PRICE_DUR = 1000;  
         const PRICE_VERT = 1500;  
   
-        function formatPrice(price) {  
-            return new Intl.NumberFormat('ru-RU').format(price) + ' ₽';  
-        }  
+        function formatPrice(price) { return new Intl.NumberFormat('ru-RU').format(price) + ' ₽'; }  
   
         function calculateTotal() {  
             const raw = parseInt(rawInput.value) || 0;  
             const dur = parseInt(durationInput.value) || 0;  
-            // Берем значение из ручного ввода, так как он теперь главный для вертикалок  
             const vert = parseInt(manualVerticals.value) || 0;  
   
             rawVal.textContent = raw;  
@@ -325,83 +349,56 @@
             totalPriceEl.textContent = formatPrice(total);  
         }  
   
-        // Синхронизация ползунка и поля ввода вертикалок  
         verticalsInput.addEventListener('input', (e) => {  
             manualVerticals.value = e.target.value;  
             calculateTotal();  
         });  
-  
         manualVerticals.addEventListener('input', (e) => {  
-            // Ограничиваем ползунок визуально, но цифра может быть любой  
             let val = parseInt(e.target.value);  
-            if(val > 20) verticalsInput.value = 20;   
-            else verticalsInput.value = val;  
+            if(val > 20) verticalsInput.value = 20; else verticalsInput.value = val;  
             calculateTotal();  
         });  
-  
         [rawInput, durationInput].forEach(inp => inp.addEventListener('input', calculateTotal));  
-  
         tagBtns.forEach(btn => {  
             btn.addEventListener('click', () => {  
                 const price = parseInt(btn.getAttribute('data-price'));  
                 if (btn.classList.contains('active')) {  
-                    btn.classList.remove('active');  
-                    activeTagsCost -= price;  
+                    btn.classList.remove('active'); activeTagsCost -= price;  
                 } else {  
-                    btn.classList.add('active');  
-                    activeTagsCost += price;  
+                    btn.classList.add('active'); activeTagsCost += price;  
                 }  
                 calculateTotal();  
             });  
         });  
-  
         function resetCalculator() {  
-            rawInput.value = 10;  
-            durationInput.value = 2;  
-            verticalsInput.value = 0;  
-            manualVerticals.value = 0;  
-            tagBtns.forEach(btn => btn.classList.remove('active'));  
-            activeTagsCost = 0;  
-            calculateTotal();  
+            rawInput.value = 10; durationInput.value = 2; verticalsInput.value = 0; manualVerticals.value = 0;  
+            tagBtns.forEach(btn => btn.classList.remove('active')); activeTagsCost = 0; calculateTotal();  
         }  
         calculateTotal();  
   
-        /* --- ЛОГИКА БЕСКОНЕЧНОЙ КАРУСЕЛИ --- */  
-        // Массив классов, определяющих позицию  
-        // Порядок: [Слева скрыто, Слева, Центр, Справа, Справа скрыто]  
+        /* --- КАРУСЕЛЬ --- */  
         let positions = ['pos-left-hidden', 'pos-left', 'pos-center', 'pos-right', 'pos-right-hidden'];  
-          
         const items = [  
-            document.getElementById('item-0'),  
-            document.getElementById('item-1'),  
-            document.getElementById('item-2'),  
-            document.getElementById('item-3'),  
+            document.getElementById('item-0'), document.getElementById('item-1'),  
+            document.getElementById('item-2'), document.getElementById('item-3'),  
             document.getElementById('item-4')  
         ];  
   
         function updateClasses() {  
             items.forEach((item, index) => {  
-                // Удаляем все позиционные классы  
                 item.classList.remove('pos-left-hidden', 'pos-left', 'pos-center', 'pos-right', 'pos-right-hidden');  
-                // Добавляем актуальный класс из массива positions  
                 item.classList.add(positions[index]);  
+                  
+                // Если элемент ушел из центра, сбрасываем видео обратно в обложку (опционально, для экономии памяти)  
+                // но для плавности можно не делать.  
             });  
         }  
   
         function rotateCarousel(direction) {  
             if (direction === 'next') {  
-                // Сдвигаем массив: последний элемент становится первым  
-                // [A, B, C, D, E] -> [E, A, B, C, D]  
-                // Визуально элементы "едут" влево, если смотреть на классы  
-                // Но нам нужно движение ВПРАВО (next), значит классы должны сместиться так:  
-                // Элемент, который был pos-right (3), должен стать pos-center (2) и т.д.  
-                  
-                const last = positions.pop();  
-                positions.unshift(last);  
+                const last = positions.pop(); positions.unshift(last);  
             } else {  
-                // prev  
-                const first = positions.shift();  
-                positions.push(first);  
+                const first = positions.shift(); positions.push(first);  
             }  
             updateClasses();  
         }  
